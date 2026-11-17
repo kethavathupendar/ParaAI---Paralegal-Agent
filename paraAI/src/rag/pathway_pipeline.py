@@ -61,7 +61,11 @@ def build_pipeline() -> pw.Table:
     def _process(key, row, time, is_addition):
         if not is_addition:
             return
-        path = row["path"]
+        # With with_metadata=True, Pathway puts the file path inside the
+        # `_metadata` column (there is no top-level "path" column).
+        meta = row["_metadata"]
+        meta = meta.as_dict() if hasattr(meta, "as_dict") else dict(meta)
+        path = str(meta["path"])
         case_id = _case_id_from_filename(path)
         try:
             chunks = load_any(path)
